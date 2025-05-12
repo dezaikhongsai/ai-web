@@ -1,13 +1,26 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Box, Typography, Paper } from '@mui/material';
 
-function ResultDisplay({ path, time }) {
+function ResultDisplay({ path, time, totalCost }) {
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="h6">Kết quả</Typography>
-      <Typography>Đường đi: {path.length ? path.join(' -> ') : 'Chưa có đường đi'}</Typography>
-      <Typography>Thời gian xử lý: {time.toFixed(2)} ms</Typography>
-    </Box>
+    <Paper sx={{ p: 2, mt: 2 }}>
+      <Box>
+        <Typography variant="subtitle1" gutterBottom>
+          Kết quả
+        </Typography>
+        <Typography>
+          Đường đi: {path.length > 0 ? path.join(' → ') : 'Chưa có đường đi'}
+        </Typography>
+        <Typography>
+          Thời gian xử lý: {time.toFixed(2)} ms
+        </Typography>
+        {totalCost !== undefined && (
+          <Typography>
+            Tổng chi phí: {totalCost}
+          </Typography>
+        )}
+      </Box>
+    </Paper>
   );
 }
 

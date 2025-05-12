@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { TextField, Button, FormControl, InputLabel, Select, MenuItem, Box, Slider, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { TextField, Button, FormControl, InputLabel, Select, MenuItem, Box, Slider, Typography, Alert } from '@mui/material';
 
 function GraphForm({ onSubmit, setAlgorithm, setMode, mode, speed, onSpeedChange }) {
   const [nodes, setNodes] = useState('');
@@ -8,19 +8,53 @@ function GraphForm({ onSubmit, setAlgorithm, setMode, mode, speed, onSpeedChange
   const [endNode, setEndNode] = useState('');
   const [algorithm, setLocalAlgorithm] = useState('BFS'); // Local state for algorithm
   const [localMode, setLocalMode] = useState('Auto'); // Local state for mode
+  const [maxDepth, setMaxDepth] = useState('5'); // Độ sâu tối đa cho IDS
+  const [edgeFormat, setEdgeFormat] = useState('Định dạng: u,v (mỗi dòng)');
+
+  useEffect(() => {
+    // Cập nhật định dạng ví dụ khi thay đổi thuật toán
+    if (algorithm === 'UCS') {
+      setEdgeFormat('Định dạng: u,v,cost (mỗi dòng)');
+    } else {
+      setEdgeFormat('Định dạng: u,v (mỗi dòng)');
+    }
+  }, [algorithm]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const nodeCount = parseInt(nodes);
-    const edgeList = edges
-      .split('\n')
-      .map(line => line.split(',').map(Number))
-      .filter(line => line.length === 2 && !isNaN(line[0]) && !isNaN(line[1])); // Basic validation
+    let edgeList = [];
+    
+    // Xử lý định dạng cạnh tùy thuộc vào thuật toán
+    if (algorithm === 'UCS') {
+      edgeList = edges
+        .split('\n')
+        .map(line => {
+          const parts = line.split(',');
+          if (parts.length === 3) {
+            const u = parseInt(parts[0]);
+            const v = parseInt(parts[1]);
+            const cost = parseFloat(parts[2]);
+            if (!isNaN(u) && !isNaN(v) && !isNaN(cost)) {
+              return [u, v, cost];
+            }
+          }
+          return null;
+        })
+        .filter(edge => edge !== null);
+    } else {
+      edgeList = edges
+        .split('\n')
+        .map(line => line.split(',').map(Number))
+        .filter(line => line.length === 2 && !isNaN(line[0]) && !isNaN(line[1]));
+    }
+
     onSubmit({ 
       nodes: nodeCount, 
       edges: edgeList,
       startNode: parseInt(startNode),
-      endNode: endNode ? parseInt(endNode) : null
+      endNode: endNode ? parseInt(endNode) : null,
+      maxDepth: parseInt(maxDepth)
     });
   };
 
@@ -51,16 +85,21 @@ function GraphForm({ onSubmit, setAlgorithm, setMode, mode, speed, onSpeedChange
         inputProps={{ min: 1 }}
       />
       <TextField
-        label="Danh sách cạnh (định dạng: u,v mỗi dòng)"
+        label={`Danh sách cạnh (${edgeFormat})`}
         multiline
         rows={4}
         value={edges}
         onChange={(e) => setEdges(e.target.value)}
         fullWidth
         margin="normal"
-        placeholder="0,1\n1,2\n2,3"
+        placeholder={algorithm === 'UCS' ? "0,1,5\n1,2,3\n2,3,2" : "0,1\n1,2\n2,3"}
         required
       />
+      {algorithm === 'UCS' && (
+        <Alert severity="info" sx={{ mt: 1, mb: 1 }}>
+          Định dạng cạnh cho UCS: u,v,cost (ví dụ: 0,1,5 có nghĩa là cạnh từ node 0 đến node 1 với chi phí 5)
+        </Alert>
+      )}
       <TextField
         label="Node bắt đầu"
         type="number"
@@ -88,8 +127,24 @@ function GraphForm({ onSubmit, setAlgorithm, setMode, mode, speed, onSpeedChange
         >
           <MenuItem value="BFS">BFS</MenuItem>
           <MenuItem value="DFS">DFS</MenuItem>
+          <MenuItem value="IDS">IDS (Tìm kiếm sâu dần)</MenuItem>
+          <MenuItem value="UCS">UCS (Tìm kiếm theo chi phí đồng nhất)</MenuItem>
         </Select>
       </FormControl>
+      
+      {algorithm === 'IDS' && (
+        <TextField
+          label="Độ sâu tối đa"
+          type="number"
+          value={maxDepth}
+          onChange={(e) => setMaxDepth(e.target.value)}
+          fullWidth
+          margin="normal"
+          required
+          inputProps={{ min: 1 }}
+        />
+      )}
+      
       <FormControl fullWidth margin="normal">
         <InputLabel>Chế độ</InputLabel>
         <Select
