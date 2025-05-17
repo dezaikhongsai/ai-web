@@ -5,12 +5,8 @@ function GraphVisualizer({ graph, steps, currentStep, mode, setCurrentStep, spee
   const sketch = (p5) => {
     let nodes = [];
     let edges = graph.edges;
-    
-    // Kiểm tra xem có phải thuật toán IDS không
     const isIDS = steps.length > 0 && steps[0].hasOwnProperty('depth');
-    // Kiểm tra xem có phải thuật toán UCS không
     const isUCS = steps.length > 0 && steps[0].hasOwnProperty('costs');
-    // Kiểm tra xem đồ thị có chi phí không (thuật toán UCS)
     const hasEdgeCosts = edges.length > 0 && edges[0].length > 2;
 
     p5.setup = () => {

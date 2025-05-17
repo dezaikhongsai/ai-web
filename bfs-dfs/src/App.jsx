@@ -98,7 +98,7 @@ function App() {
             />
             <Modal open={openModal} onClose={() => setOpenModal(false)}>
               <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'background.paper', boxShadow: 24, p: 4, minWidth: 400 }}>
-                <ModalResultTable steps={steps} />
+                <ModalResultTable steps={steps} mode={algorithm} endNode={graph?.endNode}  graph={graph}/>
               </Box>
             </Modal>
           </>
